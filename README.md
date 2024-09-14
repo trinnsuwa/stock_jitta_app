@@ -31,55 +31,33 @@
     flutter run
     ```
 
-### Flow Chart
+### User Flow
 
-+-------------------+
-|   User Opens App  |
-+-------------------+
-         |
-         v
-+-----------------------------+
-|  Fetch Stocks Data (GraphQL) |
-+-----------------------------+
-         |
-         v
-+----------------------------------------+
-|  Display Stock Rankings List on Screen |
-+----------------------------------------+
-         |
-         v
-+---------------------------------------+
-|   Filter by Stock Market or Sector?   |
-+---------------------------------------+
-         |                       |
-         v                       v
-+----------------+         +-----------------+
-|   No Filters   |         |   Apply Filter  |
-| (Show All Data)|         | (Filter Stocks) |
-+----------------+         +-----------------+
-         |                       |
-         v                       v
-+----------------------------------------+
-|  Display Updated Stock Rankings List  |
-+----------------------------------------+
-         |
-         v
-+---------------------------+
-|   User Selects a Stock     |
-+---------------------------+
-         |
-         v
-+-------------------------------------+
-|   Fetch Additional Stock Details    |
-|          (from GraphQL)             |
-+-------------------------------------+
-         |
-         v
-+-------------------------------------+
-|  Display Stock Details on New Screen|
-+-------------------------------------+
-         |
-         v
-+-------------------+
-|   End User Flow   |
-+-------------------+
+1. **User Opens App**
+   - User opens the app to start exploring stocks.
+
+2. **Fetch Stocks Data (GraphQL)**
+   - The app fetches the stock ranking data from the GraphQL API.
+
+3. **Display Stock Rankings List on Screen**
+   - The fetched data is displayed on the screen as a list of stock rankings.
+
+4. **Filter by Stock Market or Sector?**
+   - User can filter the stock list by selecting a specific market or sector.
+   - If no filter is applied, all data is shown.
+   - If filters are applied, the list is updated based on the user's selection.
+
+5. **Display Updated Stock Rankings List**
+   - Show the stock rankings list after applying the filter (if any).
+
+6. **User Selects a Stock**
+   - User taps on a stock to view more details.
+
+7. **Fetch Additional Stock Details**
+   - The app fetches more detailed information about the selected stock from the GraphQL API.
+
+8. **Display Stock Details on New Screen**
+   - The detailed information about the stock is displayed on a new screen.
+
+9. **End User Flow**
+   - The user completes the exploration process.

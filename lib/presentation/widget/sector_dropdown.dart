@@ -37,7 +37,7 @@ class _SectorDropdownState extends State<SectorDropdown> {
                 selectedMarket = newValue!;
               });
               context.read<StockBloc>().add(FetchStockByRanking(
-                  market: selectedMarket, page: 0, limit: 10));
+                  market: selectedMarket, page: 0, limit: 10, sectors: selectedSector));
             },
           ),
           DropdownButton<String>(

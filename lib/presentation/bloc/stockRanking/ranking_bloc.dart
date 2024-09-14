@@ -7,10 +7,11 @@ import 'package:jitta_app/presentation/bloc/stockRanking/ranking_event.dart';
 import 'package:jitta_app/presentation/bloc/stockRanking/ranking_state.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:jitta_app/service/graphql_service.dart';
 import 'package:jitta_app/utils/constants.dart';
 
 class StockBloc extends Bloc<StockEvent, StockState> {
-  final GraphQLClient client;
+  final GraphQLService graphQLService;
   final Box cacheBox;
 
   int currentPage = 0;
@@ -18,7 +19,7 @@ class StockBloc extends Bloc<StockEvent, StockState> {
   bool hasMoreData = true;
   String loadMarket = 'TH';
 
-  StockBloc(this.client, this.cacheBox) : super(StockInitial()) {
+  StockBloc(this.graphQLService, this.cacheBox) : super(StockInitial()) {
     on<FetchStockByRanking>(_onFetchStockByRanking);
     on<LoadMoreStocks>(_onLoadMoreStocks);
   }
@@ -31,8 +32,10 @@ class StockBloc extends Bloc<StockEvent, StockState> {
       currentPage = 0;
       hasMoreData = true;
       loadMarket = event.market;
-      final QueryOptions options = QueryOptions(
-        document: gql(stockQuery),
+
+      // final QueryResult result = await client.query(options);
+      final Map<String, dynamic>? result = await graphQLService.performQuery(
+        stockQuery,
         variables: {
           'market': event.market,
           'sectors': event.sectors,
@@ -41,13 +44,11 @@ class StockBloc extends Bloc<StockEvent, StockState> {
         },
       );
 
-      final QueryResult result = await client.query(options);
+      // if (result.hasException) {
+      //   throw result.exception!;
+      // }
 
-      if (result.hasException) {
-        throw result.exception!;
-      }
-
-      final data = result.data!;
+      final data = result!;
       final stocks = (data['jittaRanking']['data'] as List)
           .map((e) => Stock.fromJson(e))
           .toList();
@@ -111,13 +112,18 @@ class StockBloc extends Bloc<StockEvent, StockState> {
         },
       );
 
-      final QueryResult result = await client.query(options);
+      final Map<String, dynamic>? result = await graphQLService.performQuery(stockQuery ,variables: {
+          'market': loadMarket,
+          'sectors': event.sectors,
+          'page': currentPage,
+          'limit': event.limit,
+        },);
 
-      if (result.hasException) {
-        throw result.exception!;
-      }
+      // if (result.hasException) {
+      //   throw result.exception!;
+      // }
 
-      final data = result.data!;
+      final data = result!;
       final newStocks = (data['jittaRanking']['data'] as List)
           .map((e) => Stock.fromJson(e))
           .toList();
@@ -141,15 +147,12 @@ class StockBloc extends Bloc<StockEvent, StockState> {
         ));
       }
 
-      hasMoreData = newStocks.length < result.data!['jittaRanking']['count'];
+      hasMoreData = newStocks.length < result['jittaRanking']['count'];
     } catch (e) {
       /// emit stock no internet
       isLoading = false;
     } finally {
       isLoading = false;
     }
-    
   }
 }
-
-

@@ -3,12 +3,14 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:jitta_app/data/model/stockDetail/stock_detail_model.dart';
 import 'package:jitta_app/presentation/bloc/stockDetail/stock_detail_event.dart';
 import 'package:jitta_app/presentation/bloc/stockDetail/stock_detail_state.dart';
+import 'package:jitta_app/service/graphql_service.dart';
 import 'package:jitta_app/utils/constants.dart';
 
 class StockDetailBloc extends Bloc<StockDetailEvent, StockDetailState> {
-  final GraphQLClient client;
+  final GraphQLService graphQLService;
 
-  StockDetailBloc({required this.client}) : super(StockDetailInitial()) {
+  StockDetailBloc({required this.graphQLService})
+      : super(StockDetailInitial()) {
     on<FetchStockDetail>(_onFetchStockDetail);
   }
 
@@ -17,7 +19,7 @@ class StockDetailBloc extends Bloc<StockDetailEvent, StockDetailState> {
     emit(StockDetailLoading());
 
     final QueryOptions options = QueryOptions(
-      document: gql(stockDetalQuery),
+      document: gql(stockDetailQuery),
       variables: {
         'stockId': event.stockId,
         'id': event.id,
@@ -26,26 +28,25 @@ class StockDetailBloc extends Bloc<StockDetailEvent, StockDetailState> {
     );
 
     try {
-      final QueryResult result = await client.query(options);
-
-      if (result.hasException) {
-        throw result.exception!;
-      }
-
-      var data = result.data!['stock'];
+      final Map<String, dynamic>? result = await graphQLService.performQuery(
+        stockDetailQuery,
+        variables: {
+          'stockId': event.stockId,
+          'id': event.id,
+        },
+      );
+      var data = result!['stock'];
       StockDetail stock = StockDetail.fromJson(data);
       emit(StockDetailLoaded(stock: stock));
 
-      client.writeQuery(
+      graphQLService.client.writeQuery(
         options.asRequest,
-        data: result.data!,
+        data: result,
       );
     } catch (e) {
-      print(e.toString());
-
-      final cachedResult = await client.query(
+      final cachedResult = await graphQLService.client.query(
         QueryOptions(
-          document: gql(stockDetalQuery),
+          document: gql(stockDetailQuery),
           variables: {
             'stockId': event.stockId,
             'id': event.id,
@@ -54,14 +55,16 @@ class StockDetailBloc extends Bloc<StockDetailEvent, StockDetailState> {
         ),
       );
 
-      emit(const StockDetailError('Failed to fetch stock details: Please try again later.'));
+      emit(const StockDetailError(
+          'Failed to fetch stock details: Please try again later.'));
 
       if (cachedResult.data != null) {
         final data = cachedResult.data!['stock'];
         final stock = StockDetail.fromJson(data);
         emit(StockDetailLoaded(stock: stock));
       } else {
-        emit(const StockDetailError('Failed to fetch stock details: Please try again later.'));
+        emit(const StockDetailError(
+            'Failed to fetch stock details: Please try again later.'));
       }
     }
   }
