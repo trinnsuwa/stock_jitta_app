@@ -146,10 +146,7 @@ class _StockDetailPageState extends State<StockDetailPage> {
                   const SizedBox(
                     height: 20,
                   ),
-                  // const Divider(
-                  //   thickness: 1,
-                  //   color: Colors.black,
-                  // ),
+
 
                   // Jitta Factors
                   stock.jitta!.factor != null
